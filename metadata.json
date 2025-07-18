@@ -1,0 +1,6 @@
+{
+  "name": "Korean Dream Interpreter",
+  "description": "An application that uses AI to interpret dreams based on Korean symbolism. Users can input their dream and receive a detailed interpretation.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
