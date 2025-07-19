@@ -46,8 +46,8 @@ const InterstitialAd: React.FC<InterstitialAdProps> = ({ onComplete, message }) 
         <div className="bg-slate-800 rounded-lg p-4 flex justify-center items-center min-h-[280px] w-full">
              <ins className="adsbygoogle"
                  style={{ display: 'block', width: '100%' }}
-                 data-ad-client="ca-pub-xxxxxxxxxxxxxxxx" // 본인의 게시자 ID로 변경
-                 data-ad-slot="xxxxxxxxxx"             // 본인의 광고 단위 슬롯 ID로 변경
+                 data-ad-client="ca-pub-9110596823822061" // 본인의 게시자 ID로 변경
+                 data-ad-slot="9165067558"             // 본인의 광고 단위 슬롯 ID로 변경
                  data-ad-format="auto"
                  data-full-width-responsive="true"></ins>
         </div>
