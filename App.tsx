@@ -1,52 +1,80 @@
 import React, { useState, useCallback } from 'react';
 import { View, DreamInterpretation, DreamExample } from './types';
 import HomeView from './components/HomeView';
-import InterstitialAd from './components/InterstitialAd';
 import ResultView from './components/ResultView';
 import DetailView from './components/DetailView';
 import { getDreamInterpretation } from './services/geminiService';
 
+// AdSense Ad Placement API 타입을 전역으로 선언합니다.
+declare global {
+    interface Window {
+        adbreak?: (config: {
+            type: 'interstitial';
+            name: string;
+            onBreakDone: (placementInfo: { breakStatus: string }) => void;
+            onBreakStart?: () => void;
+        }) => void;
+        adsbygoogle?: { [key: string]: unknown }[];
+    }
+}
+
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.HOME);
-  const [postAdView, setPostAdView] = useState<View>(View.RESULT);
   const [dreamInput, setDreamInput] = useState<string>('');
   const [selectedDream, setSelectedDream] = useState<DreamExample | null>(null);
   const [interpretation, setInterpretation] = useState<DreamInterpretation | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleInterpretRequest = useCallback(async (dream: string) => {
-    setDreamInput(dream);
-    setPostAdView(View.RESULT);
-    setCurrentView(View.AD);
-    setIsLoading(true);
-    setError(null);
-    setInterpretation(null);
-
-    try {
-      const result = await getDreamInterpretation(dream);
-      setInterpretation(result);
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("알 수 없는 오류가 발생했습니다.");
-      }
-    } finally {
-      setIsLoading(false);
+  const showInterstitialAd = (onComplete: () => void) => {
+    if (typeof window.adbreak === 'function') {
+      window.adbreak({
+        type: 'interstitial',
+        name: 'next_view', // 광고 위치 이름
+        onBreakDone: (placementInfo) => {
+          console.log(`Ad break status: ${placementInfo.breakStatus}`);
+          onComplete();
+        },
+      });
+    } else {
+      console.warn('AdBreak function not available. Skipping ad.');
+      onComplete(); // 광고 API가 준비되지 않았으면 바로 다음 단계로 진행
     }
+  };
+
+  const handleInterpretRequest = useCallback((dream: string) => {
+    showInterstitialAd(() => {
+      // 광고가 끝나면 결과 화면으로 이동하고 데이터 로딩 시작
+      setCurrentView(View.RESULT);
+      setDreamInput(dream);
+      setIsLoading(true);
+      setError(null);
+      setInterpretation(null);
+
+      (async () => {
+        try {
+          const result = await getDreamInterpretation(dream);
+          setInterpretation(result);
+        } catch (err: unknown) {
+          if (err instanceof Error) {
+            setError(err.message);
+          } else {
+            setError("알 수 없는 오류가 발생했습니다.");
+          }
+        } finally {
+          setIsLoading(false);
+        }
+      })();
+    });
   }, []);
   
   const handleDreamExampleClick = useCallback((dream: DreamExample) => {
-    setSelectedDream(dream);
-    setPostAdView(View.DETAIL);
-    setCurrentView(View.AD);
+    showInterstitialAd(() => {
+      // 광고가 끝나면 상세 화면으로 이동
+      setSelectedDream(dream);
+      setCurrentView(View.DETAIL);
+    });
   }, []);
-
-  const handleAdComplete = useCallback(() => {
-    // isLoading is now controlled by the API call lifecycle.
-    setCurrentView(postAdView);
-  }, [postAdView]);
 
   const handleReset = () => {
     setCurrentView(View.HOME);
@@ -61,9 +89,6 @@ const App: React.FC = () => {
     switch (currentView) {
       case View.HOME:
         return <HomeView onInterpret={handleInterpretRequest} onExampleClick={handleDreamExampleClick} />;
-      case View.AD:
-        const adMessage = postAdView === View.RESULT ? "해몽 결과를 불러오는 중..." : "꿈 예시를 불러오는 중...";
-        return <InterstitialAd onComplete={handleAdComplete} message={adMessage} />;
       case View.RESULT:
         return (
           <ResultView

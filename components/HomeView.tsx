@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GOOD_DREAMS, BAD_DREAMS } from '../constants';
 import { DreamExample } from '../types';
+import DisplayAd from './DisplayAd';
 
 interface HomeViewProps {
   onInterpret: (dream: string) => void;
@@ -62,7 +63,7 @@ const HomeView: React.FC<HomeViewProps> = ({ onInterpret, onExampleClick }) => {
         </header>
 
         <main className="w-full">
-            <form onSubmit={handleSubmit} className="mb-12 animate-fade-in-up">
+            <form onSubmit={handleSubmit} className="mb-8 animate-fade-in-up">
             <textarea
                 value={dream}
                 onChange={(e) => setDream(e.target.value)}
@@ -78,6 +79,10 @@ const HomeView: React.FC<HomeViewProps> = ({ onInterpret, onExampleClick }) => {
                 무료 해석 받기 <i className="fa-solid fa-arrow-right ml-2"></i>
             </button>
             </form>
+            
+            <div className="animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+                <DisplayAd adSlot="9165067558" />
+            </div>
 
             <div className="space-y-8 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
             <section>

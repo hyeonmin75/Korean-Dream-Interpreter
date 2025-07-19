@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { toPng } from 'html-to-image';
 import { DreamInterpretation } from '../types';
+import DisplayAd from './DisplayAd';
 
 interface ResultViewProps {
   dream: string;
@@ -87,6 +88,9 @@ const ResultView: React.FC<ResultViewProps> = ({ dream, interpretation, isLoadin
                     <p className="text-slate-200 italic">"{dream}"</p>
                 )}
             </div>
+
+            {/* Ad placement */}
+            {!isLoading && interpretation && <DisplayAd adSlot="9165067558" />}
 
             <div className="animate-fade-in-up">
                 {isLoading && <LoadingSpinner />}
