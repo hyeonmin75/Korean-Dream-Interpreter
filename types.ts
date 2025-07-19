@@ -16,7 +16,6 @@ export interface DreamInterpretation {
 export interface DreamExample {
     icon: React.ReactNode;
     title: string;
-    url: string;
     description: string;
 }
 

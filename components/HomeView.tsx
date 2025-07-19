@@ -19,11 +19,13 @@ const DreamCard: React.FC<{ dream: DreamExample, onShowDetail: (dream: DreamExam
         onShowDetail(dream);
     };
 
+    const adName = `view_${dream.title.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase()}`;
+
     setTimeout(() => {
         if (window.adbreak) {
           window.adbreak({
             type: 'browse',
-            name: `view_${dream.url.split('/').pop()?.split('.')[0]}`,
+            name: adName,
             adBreakDone: (placementInfo) => {
               console.log('Ad finished for detail view:', placementInfo.breakStatus);
               navigateToDetail();
@@ -33,7 +35,7 @@ const DreamCard: React.FC<{ dream: DreamExample, onShowDetail: (dream: DreamExam
           console.warn('Adbreak API not found, proceeding without ad.');
           navigateToDetail();
         }
-    }, 50);
+    }, 100);
   };
 
   return (

@@ -12,11 +12,17 @@ declare global {
 
 const DisplayAd: React.FC<DisplayAdProps> = ({ adSlot }) => {
   useEffect(() => {
-    try {
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
-    } catch (err) {
-      console.error("AdSense error:", err);
-    }
+    // Wrap the ad push in a timeout to ensure the container is sized correctly.
+    const timer = setTimeout(() => {
+        try {
+          (window.adsbygoogle = window.adsbygoogle || []).push({});
+        } catch (err) {
+          console.error("AdSense error:", err);
+        }
+    }, 100);
+
+    // Cleanup function to clear the timeout if the component unmounts.
+    return () => clearTimeout(timer);
   }, [adSlot]);
 
   return (

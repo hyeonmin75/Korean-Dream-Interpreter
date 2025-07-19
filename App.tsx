@@ -51,7 +51,7 @@ const App: React.FC = () => {
             console.warn('Adbreak API not found, proceeding without ad.');
             proceedToInterpretation();
           }
-    }, 50);
+    }, 100);
 
   }, []);
 
