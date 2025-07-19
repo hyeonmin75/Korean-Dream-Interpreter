@@ -61,6 +61,19 @@ const HomeView: React.FC<HomeViewProps> = ({ onInterpret, onExampleClick }) => {
             <p className="text-slate-300 text-lg">당신의 꿈에 담긴 비밀을 풀어보세요</p>
         </header>
 
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9110596823822061"
+     crossorigin="anonymous"></script>
+<!-- adwikihelp -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-9110596823822061"
+     data-ad-slot="9165067558"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
         <main className="w-full">
             <form onSubmit={handleSubmit} className="mb-12 animate-fade-in-up">
             <textarea
