@@ -17,7 +17,7 @@ const DisplayAd: React.FC<DisplayAdProps> = ({ adSlot }) => {
     } catch (err) {
       console.error("AdSense error:", err);
     }
-  }, []);
+  }, [adSlot]);
 
   return (
     <div className="my-6 text-center bg-slate-800/50 p-4 rounded-xl border border-slate-700/50">

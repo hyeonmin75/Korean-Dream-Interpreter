@@ -47,7 +47,7 @@ const ResultView: React.FC<ResultViewProps> = ({ dream, interpretation, isLoadin
         pixelRatio: 2, // for better resolution
        });
       const link = document.createElement('a');
-      link.download = 'ai-dream-interpretation.png';
+      link.download = 'dream-interpretation.png';
       link.href = dataUrl;
       link.click();
     } catch (err) {
@@ -58,8 +58,8 @@ const ResultView: React.FC<ResultViewProps> = ({ dream, interpretation, isLoadin
 
   const handleShare = async () => {
     const shareData = {
-      title: 'AI 꿈 해몽가',
-      text: `"${dream}"에 대한 AI 꿈 해석 결과를 확인해보세요!`,
+      title: '꿈 해몽가',
+      text: `"${dream}"에 대한 꿈 해석 결과를 확인해보세요!`,
       url: window.location.href,
     };
     try {

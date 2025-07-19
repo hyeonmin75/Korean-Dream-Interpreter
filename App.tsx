@@ -5,90 +5,69 @@ import ResultView from './components/ResultView';
 import DetailView from './components/DetailView';
 import { getDreamInterpretation } from './services/geminiService';
 
-// AdSense Ad Placement API 타입을 전역으로 선언합니다.
-declare global {
-    interface Window {
-        adbreak?: (config: {
-            type: 'interstitial';
-            name: string;
-            onBreakDone: (placementInfo: { breakStatus: string }) => void;
-            onBreakStart?: () => void;
-        }) => void;
-        adsbygoogle?: { [key: string]: unknown }[];
-    }
-}
-
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.HOME);
   const [dreamInput, setDreamInput] = useState<string>('');
-  const [selectedDream, setSelectedDream] = useState<DreamExample | null>(null);
   const [interpretation, setInterpretation] = useState<DreamInterpretation | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-
-  const showInterstitialAd = (onComplete: () => void) => {
-    if (typeof window.adbreak === 'function') {
-      window.adbreak({
-        type: 'interstitial',
-        name: 'next_view', // 광고 위치 이름
-        onBreakDone: (placementInfo) => {
-          console.log(`Ad break status: ${placementInfo.breakStatus}`);
-          onComplete();
-        },
-      });
-    } else {
-      console.warn('AdBreak function not available. Skipping ad.');
-      onComplete(); // 광고 API가 준비되지 않았으면 바로 다음 단계로 진행
-    }
-  };
+  const [selectedDream, setSelectedDream] = useState<DreamExample | null>(null);
 
   const handleInterpretRequest = useCallback((dream: string) => {
-    showInterstitialAd(() => {
-      // 광고가 끝나면 결과 화면으로 이동하고 데이터 로딩 시작
-      setCurrentView(View.RESULT);
-      setDreamInput(dream);
-      setIsLoading(true);
-      setError(null);
-      setInterpretation(null);
+    setDreamInput(dream);
+    setCurrentView(View.RESULT);
+    setIsLoading(true);
+    setError(null);
+    setInterpretation(null);
 
-      (async () => {
-        try {
-          const result = await getDreamInterpretation(dream);
-          setInterpretation(result);
-        } catch (err: unknown) {
-          if (err instanceof Error) {
-            setError(err.message);
-          } else {
-            setError("알 수 없는 오류가 발생했습니다.");
-          }
-        } finally {
-          setIsLoading(false);
+    const performInterpretation = async () => {
+      try {
+        const result = await getDreamInterpretation(dream);
+        setInterpretation(result);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("알 수 없는 오류가 발생했습니다.");
         }
-      })();
-    });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    if (window.adbreak) {
+        window.adbreak({
+          type: 'next',
+          name: 'before_interpretation',
+          adBreakDone: (placementInfo) => {
+            performInterpretation();
+          },
+        });
+      } else {
+        console.warn('Adbreak API not found, proceeding without ad.');
+        performInterpretation();
+      }
+
   }, []);
-  
-  const handleDreamExampleClick = useCallback((dream: DreamExample) => {
-    showInterstitialAd(() => {
-      // 광고가 끝나면 상세 화면으로 이동
+
+  const handleShowDetail = useCallback((dream: DreamExample) => {
       setSelectedDream(dream);
       setCurrentView(View.DETAIL);
-    });
   }, []);
 
   const handleReset = () => {
     setCurrentView(View.HOME);
     setDreamInput('');
     setInterpretation(null);
-    setSelectedDream(null);
     setError(null);
     setIsLoading(false);
+    setSelectedDream(null);
   };
   
   const renderView = () => {
     switch (currentView) {
       case View.HOME:
-        return <HomeView onInterpret={handleInterpretRequest} onExampleClick={handleDreamExampleClick} />;
+        return <HomeView onInterpret={handleInterpretRequest} onShowDetail={handleShowDetail} />;
       case View.RESULT:
         return (
           <ResultView
@@ -100,13 +79,9 @@ const App: React.FC = () => {
           />
         );
       case View.DETAIL:
-        if (!selectedDream) {
-            handleReset();
-            return null;
-        }
-        return <DetailView dream={selectedDream} onBack={handleReset} />;
+        return selectedDream ? <DetailView dream={selectedDream} onReset={handleReset} /> : <HomeView onInterpret={handleInterpretRequest} onShowDetail={handleShowDetail} />;
       default:
-        return <HomeView onInterpret={handleInterpretRequest} onExampleClick={handleDreamExampleClick} />;
+        return <HomeView onInterpret={handleInterpretRequest} onShowDetail={handleShowDetail} />;
     }
   };
 

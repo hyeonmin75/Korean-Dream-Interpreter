@@ -16,5 +16,18 @@ export interface DreamInterpretation {
 export interface DreamExample {
     icon: React.ReactNode;
     title: string;
+    url: string;
     description: string;
+}
+
+declare global {
+    interface Window {
+        adbreak?: (options: {
+            type: string;
+            name: string;
+            adBreakDone: (placementInfo: any) => void;
+            beforeAd?: () => void;
+            afterAd?: () => void;
+        }) => void;
+    }
 }

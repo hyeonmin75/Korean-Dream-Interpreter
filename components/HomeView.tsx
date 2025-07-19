@@ -5,13 +5,33 @@ import DisplayAd from './DisplayAd';
 
 interface HomeViewProps {
   onInterpret: (dream: string) => void;
-  onExampleClick: (dream: DreamExample) => void;
+  onShowDetail: (dream: DreamExample) => void;
 }
 
-const DreamCard: React.FC<{ dream: DreamExample; onClick: () => void }> = ({ dream, onClick }) => {
+const DreamCard: React.FC<{ dream: DreamExample, onShowDetail: (dream: DreamExample) => void }> = ({ dream, onShowDetail }) => {
+  const handleClick = () => {
+    const navigateToDetail = () => {
+        onShowDetail(dream);
+    };
+
+    if (window.adbreak) {
+      window.adbreak({
+        type: 'next',
+        name: `view_${dream.url.split('/').pop()?.split('.')[0]}`, // e.g., view_g01
+        adBreakDone: (placementInfo) => {
+          console.log('Ad finished:', placementInfo.breakStatus);
+          navigateToDetail();
+        },
+      });
+    } else {
+      console.warn('Adbreak API not found, proceeding without ad.');
+      navigateToDetail();
+    }
+  };
+
   return (
     <button
-      onClick={onClick}
+      onClick={handleClick}
       className="w-full bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 shadow-lg transition-all duration-300 ease-in-out text-left p-4 flex items-center justify-between hover:bg-slate-700/50 hover:border-purple-500/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
       aria-label={`${dream.title} 예시 보기`}
     >
@@ -35,7 +55,7 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   return newArr;
 };
 
-const HomeView: React.FC<HomeViewProps> = ({ onInterpret, onExampleClick }) => {
+const HomeView: React.FC<HomeViewProps> = ({ onInterpret, onShowDetail }) => {
   const [dream, setDream] = useState('');
   const [goodDreamExamples, setGoodDreamExamples] = useState<DreamExample[]>([]);
   const [badDreamExamples, setBadDreamExamples] = useState<DreamExample[]>([]);
@@ -74,7 +94,7 @@ const HomeView: React.FC<HomeViewProps> = ({ onInterpret, onExampleClick }) => {
             <button
                 type="submit"
                 disabled={!dream.trim()}
-                className="w-full mt-4 py-4 px-6 text-lg font-bold text-white rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 transition-all duration-300 shadow-lg shadow-purple-500/30"
+                className="w-full mt-4 py-4 px-6 text-lg font-bold text-white rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 transition-all duration-300 shadow-lg shadow-purple-500/30"
             >
                 무료 해석 받기 <i className="fa-solid fa-arrow-right ml-2"></i>
             </button>
@@ -88,11 +108,11 @@ const HomeView: React.FC<HomeViewProps> = ({ onInterpret, onExampleClick }) => {
             <section>
                 <h2 className="text-xl font-semibold text-slate-200 mb-4 text-left">
                     <i className="fa-solid fa-sun text-yellow-300 mr-2"></i>
-                    예시 길몽
+                    대표적인 길몽
                 </h2>
                 <div className="grid grid-cols-1 gap-3">
                 {goodDreamExamples.map((dream, index) => (
-                    <DreamCard key={`good-${index}`} dream={dream} onClick={() => onExampleClick(dream)} />
+                    <DreamCard key={`good-${index}`} dream={dream} onShowDetail={onShowDetail} />
                 ))}
                 </div>
             </section>
@@ -104,7 +124,7 @@ const HomeView: React.FC<HomeViewProps> = ({ onInterpret, onExampleClick }) => {
                 </h2>
                 <div className="grid grid-cols-1 gap-3">
                 {badDreamExamples.map((dream, index) => (
-                    <DreamCard key={`bad-${index}`} dream={dream} onClick={() => onExampleClick(dream)} />
+                    <DreamCard key={`bad-${index}`} dream={dream} onShowDetail={onShowDetail} />
                 ))}
                 </div>
             </section>
