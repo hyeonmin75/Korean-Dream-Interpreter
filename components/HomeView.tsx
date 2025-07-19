@@ -6,41 +6,51 @@ import DisplayAd from './DisplayAd';
 interface HomeViewProps {
   onInterpret: (dream: string) => void;
   onShowDetail: (dream: DreamExample) => void;
+  isLoading: boolean;
 }
 
 const DreamCard: React.FC<{ dream: DreamExample, onShowDetail: (dream: DreamExample) => void }> = ({ dream, onShowDetail }) => {
+  const [isAdLoading, setIsAdLoading] = useState(false);
+  
   const handleClick = () => {
+    setIsAdLoading(true);
+
     const navigateToDetail = () => {
         onShowDetail(dream);
     };
 
-    if (window.adbreak) {
-      window.adbreak({
-        type: 'next',
-        name: `view_${dream.url.split('/').pop()?.split('.')[0]}`, // e.g., view_g01
-        adBreakDone: (placementInfo) => {
-          console.log('Ad finished:', placementInfo.breakStatus);
+    setTimeout(() => {
+        if (window.adbreak) {
+          window.adbreak({
+            type: 'browse',
+            name: `view_${dream.url.split('/').pop()?.split('.')[0]}`,
+            adBreakDone: (placementInfo) => {
+              console.log('Ad finished for detail view:', placementInfo.breakStatus);
+              navigateToDetail();
+            },
+          });
+        } else {
+          console.warn('Adbreak API not found, proceeding without ad.');
           navigateToDetail();
-        },
-      });
-    } else {
-      console.warn('Adbreak API not found, proceeding without ad.');
-      navigateToDetail();
-    }
+        }
+    }, 50);
   };
 
   return (
     <button
       onClick={handleClick}
-      className="w-full bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 shadow-lg transition-all duration-300 ease-in-out text-left p-4 flex items-center justify-between hover:bg-slate-700/50 hover:border-purple-500/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+      disabled={isAdLoading}
+      className="w-full bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 shadow-lg transition-all duration-300 ease-in-out text-left p-4 flex items-center justify-between hover:bg-slate-700/50 hover:border-purple-500/50 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-70 disabled:cursor-wait"
       aria-label={`${dream.title} 예시 보기`}
     >
       <div className="flex items-center space-x-4 overflow-hidden">
-        <div className="flex-shrink-0 w-8 text-center">{dream.icon}</div>
+        <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center">
+            {isAdLoading ? <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-slate-400"></div> : dream.icon}
+        </div>
         <h3 className="font-bold text-slate-100 truncate">{dream.title}</h3>
       </div>
       <div className="text-slate-400 flex-shrink-0 ml-4">
-        <i className="fa-solid fa-chevron-right"></i>
+        {!isAdLoading && <i className="fa-solid fa-chevron-right"></i>}
       </div>
     </button>
   );
@@ -55,7 +65,7 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   return newArr;
 };
 
-const HomeView: React.FC<HomeViewProps> = ({ onInterpret, onShowDetail }) => {
+const HomeView: React.FC<HomeViewProps> = ({ onInterpret, onShowDetail, isLoading }) => {
   const [dream, setDream] = useState('');
   const [goodDreamExamples, setGoodDreamExamples] = useState<DreamExample[]>([]);
   const [badDreamExamples, setBadDreamExamples] = useState<DreamExample[]>([]);
@@ -67,7 +77,7 @@ const HomeView: React.FC<HomeViewProps> = ({ onInterpret, onShowDetail }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (dream.trim()) {
+    if (dream.trim() && !isLoading) {
       onInterpret(dream.trim());
     }
   };
@@ -93,10 +103,19 @@ const HomeView: React.FC<HomeViewProps> = ({ onInterpret, onShowDetail }) => {
             />
             <button
                 type="submit"
-                disabled={!dream.trim()}
-                className="w-full mt-4 py-4 px-6 text-lg font-bold text-white rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 transition-all duration-300 shadow-lg shadow-purple-500/30"
+                disabled={!dream.trim() || isLoading}
+                className="w-full mt-4 py-4 px-6 text-lg font-bold text-white rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-600 disabled:opacity-50 disabled:cursor-wait transform hover:scale-105 transition-all duration-300 shadow-lg shadow-purple-500/30 flex items-center justify-center"
             >
-                무료 해석 받기 <i className="fa-solid fa-arrow-right ml-2"></i>
+                {isLoading ? (
+                    <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-3"></div>
+                        <span>해석을 준비 중입니다...</span>
+                    </>
+                ) : (
+                    <>
+                        무료 해석 받기 <i className="fa-solid fa-arrow-right ml-2"></i>
+                    </>
+                )}
             </button>
             </form>
             

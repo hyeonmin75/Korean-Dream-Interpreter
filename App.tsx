@@ -14,13 +14,13 @@ const App: React.FC = () => {
   const [selectedDream, setSelectedDream] = useState<DreamExample | null>(null);
 
   const handleInterpretRequest = useCallback((dream: string) => {
-    setDreamInput(dream);
-    setCurrentView(View.RESULT);
     setIsLoading(true);
+    setDreamInput(dream);
     setError(null);
     setInterpretation(null);
 
-    const performInterpretation = async () => {
+    const proceedToInterpretation = async () => {
+      setCurrentView(View.RESULT);
       try {
         const result = await getDreamInterpretation(dream);
         setInterpretation(result);
@@ -35,18 +35,23 @@ const App: React.FC = () => {
       }
     };
     
-    if (window.adbreak) {
-        window.adbreak({
-          type: 'next',
-          name: 'before_interpretation',
-          adBreakDone: (placementInfo) => {
-            performInterpretation();
-          },
-        });
-      } else {
-        console.warn('Adbreak API not found, proceeding without ad.');
-        performInterpretation();
-      }
+    // Use a short timeout to allow the UI to update with the loading state
+    // before the potentially blocking ad script is called.
+    setTimeout(() => {
+        if (window.adbreak) {
+            window.adbreak({
+              type: 'preroll',
+              name: 'before_interpretation',
+              adBreakDone: (placementInfo) => {
+                console.log(`AdSense ad break status: ${placementInfo.breakStatus}`);
+                proceedToInterpretation();
+              },
+            });
+          } else {
+            console.warn('Adbreak API not found, proceeding without ad.');
+            proceedToInterpretation();
+          }
+    }, 50);
 
   }, []);
 
@@ -67,7 +72,7 @@ const App: React.FC = () => {
   const renderView = () => {
     switch (currentView) {
       case View.HOME:
-        return <HomeView onInterpret={handleInterpretRequest} onShowDetail={handleShowDetail} />;
+        return <HomeView onInterpret={handleInterpretRequest} onShowDetail={handleShowDetail} isLoading={isLoading} />;
       case View.RESULT:
         return (
           <ResultView
@@ -79,9 +84,9 @@ const App: React.FC = () => {
           />
         );
       case View.DETAIL:
-        return selectedDream ? <DetailView dream={selectedDream} onReset={handleReset} /> : <HomeView onInterpret={handleInterpretRequest} onShowDetail={handleShowDetail} />;
+        return selectedDream ? <DetailView dream={selectedDream} onReset={handleReset} /> : <HomeView onInterpret={handleInterpretRequest} onShowDetail={handleShowDetail} isLoading={isLoading} />;
       default:
-        return <HomeView onInterpret={handleInterpretRequest} onShowDetail={handleShowDetail} />;
+        return <HomeView onInterpret={handleInterpretRequest} onShowDetail={handleShowDetail} isLoading={isLoading} />;
     }
   };
 
