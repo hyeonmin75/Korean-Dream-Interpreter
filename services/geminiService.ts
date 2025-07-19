@@ -2,12 +2,6 @@
 import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
 import { DreamInterpretation } from '../types';
 
-if (!process.env.API_KEY) {
-    throw new Error("API_KEY environment variable not set");
-}
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
 const responseSchema = {
   type: Type.OBJECT,
   properties: {
@@ -33,6 +27,13 @@ const responseSchema = {
 
 
 export const getDreamInterpretation = async (dreamDescription: string): Promise<DreamInterpretation> => {
+  if (!process.env.API_KEY) {
+    console.error("API_KEY environment variable not set");
+    throw new Error("AI 서비스가 설정되지 않았습니다. 관리자에게 문의해주세요.");
+  }
+  
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
   try {
     const response: GenerateContentResponse = await ai.models.generateContent({
       model: "gemini-2.5-flash",
