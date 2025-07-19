@@ -14,7 +14,7 @@ declare global {
 }
 
 const InterstitialAd: React.FC<InterstitialAdProps> = ({ onComplete, message }) => {
-  const DURATION = 6000; // 6 seconds. 애드센스 정책상 광고가 로드되고 사용자가 상호작용할 시간을 충분히 주어야 합니다.
+  const DURATION = 8000; // 8 seconds. 애드센스 정책상 광고가 로드되고 사용자가 상호작용할 시간을 충분히 주어야 합니다.
 
   // 타이머를 이용해 광고 표시 후 자동으로 다음 페이지로 넘어갑니다.
   useEffect(() => {
