@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://dream.bombimin.com/sitemap.xml
